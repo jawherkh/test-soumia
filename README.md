@@ -16,10 +16,6 @@ uv pip install -r pyproject.toml
 
 streamlit run frontend/app.py
 
-Déploiement Docker
-
-docker-compose up --build
-
 Utilisation
 
 1. Ouvrez l'application dans votre navigateur
