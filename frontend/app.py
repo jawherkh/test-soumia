@@ -32,7 +32,7 @@ if "current_conversation_id" not in st.session_state:
 
 st.sidebar.title("Conversations")
 
-if st.sidebar.button("➕ Nouvelle Session", use_container_width=True):
+if st.sidebar.button("Nouvelle Session", use_container_width=True):
     st.session_state.current_conversation_id = create_conversation()
     st.session_state.messages = []
     st.rerun()
@@ -72,7 +72,7 @@ if st.sidebar.button("🗑️ Effacer Tout", use_container_width=True):
 st.title("Générateur de Facture à partir d'Image")
 
 if not st.session_state.current_conversation_id:
-    st.info("👈 Cliquez sur 'Nouvelle Session' pour commencer ou sélectionnez une conversation existante")
+    st.info("Cliquez sur 'Nouvelle Session' pour commencer ou sélectionnez une conversation existante")
 else:
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
@@ -96,58 +96,58 @@ else:
         if st.session_state.last_uploaded_file != file_id:
             st.session_state.last_uploaded_file = file_id
             image_bytes = uploaded_file.read()
-        
-        user_msg = {
-            "role": "user",
-            "content": f"Téléchargé: {uploaded_file.name}",
-            "image": image_bytes
-        }
-        st.session_state.messages.append(user_msg)
-        save_message(st.session_state.current_conversation_id, user_msg["role"], user_msg["content"], image=image_bytes)
-        
-        with st.chat_message("user"):
-            st.markdown(f"Téléchargé: {uploaded_file.name}")
-            st.image(image_bytes)
-        
-        with st.chat_message("assistant"):
-            status = st.empty()
-            status.markdown("Traitement de l'image...")
             
-            try:
-                invoice_data = process_image(image_bytes)
-                status.markdown("Génération du PDF...")
+            user_msg = {
+                "role": "user",
+                "content": f"Téléchargé: {uploaded_file.name}",
+                "image": image_bytes
+            }
+            st.session_state.messages.append(user_msg)
+            save_message(st.session_state.current_conversation_id, user_msg["role"], user_msg["content"], image=image_bytes)
+            
+            with st.chat_message("user"):
+                st.markdown(f"Téléchargé: {uploaded_file.name}")
+                st.image(image_bytes)
+            
+            with st.chat_message("assistant"):
+                status = st.empty()
+                status.markdown("Traitement de l'image...")
                 
-                pdf_buffer = create_invoice_pdf(invoice_data)
-                pdf_bytes = pdf_buffer.getvalue()
-                
-                invoice_num = invoice_data.get("invoice_number", "facture")
-                filename = f"facture_{invoice_num}.pdf"
-                
-                status.markdown("Facture générée avec succès!")
-                
-                st.download_button(
-                    label="Télécharger la Facture PDF",
-                    data=pdf_bytes,
-                    file_name=filename,
-                    mime="application/pdf",
-                    key=f"download_btn_new_{len(st.session_state.messages)}"
-                )
-                
-                assistant_msg = {
-                    "role": "assistant",
-                    "content": "Facture générée avec succès!",
-                    "pdf": pdf_bytes,
-                    "filename": filename
-                }
-                st.session_state.messages.append(assistant_msg)
-                save_message(st.session_state.current_conversation_id, assistant_msg["role"], assistant_msg["content"], pdf=pdf_bytes, filename=filename)
-                
-            except Exception as e:
-                error_msg = f"Erreur: {str(e)}"
-                status.markdown(error_msg)
-                assistant_error = {
-                    "role": "assistant",
-                    "content": error_msg
-                }
-                st.session_state.messages.append(assistant_error)
-                save_message(st.session_state.current_conversation_id, assistant_error["role"], assistant_error["content"])
+                try:
+                    invoice_data = process_image(image_bytes)
+                    status.markdown("Génération du PDF...")
+                    
+                    pdf_buffer = create_invoice_pdf(invoice_data)
+                    pdf_bytes = pdf_buffer.getvalue()
+                    
+                    invoice_num = invoice_data.get("invoice_number", "facture")
+                    filename = f"facture_{invoice_num}.pdf"
+                    
+                    status.markdown("Facture générée avec succès!")
+                    
+                    st.download_button(
+                        label="Télécharger la Facture PDF",
+                        data=pdf_bytes,
+                        file_name=filename,
+                        mime="application/pdf",
+                        key=f"download_btn_new_{len(st.session_state.messages)}"
+                    )
+                    
+                    assistant_msg = {
+                        "role": "assistant",
+                        "content": "Facture générée avec succès!",
+                        "pdf": pdf_bytes,
+                        "filename": filename
+                    }
+                    st.session_state.messages.append(assistant_msg)
+                    save_message(st.session_state.current_conversation_id, assistant_msg["role"], assistant_msg["content"], pdf=pdf_bytes, filename=filename)
+                    
+                except Exception as e:
+                    error_msg = f"Erreur: {str(e)}"
+                    status.markdown(error_msg)
+                    assistant_error = {
+                        "role": "assistant",
+                        "content": error_msg
+                    }
+                    st.session_state.messages.append(assistant_error)
+                    save_message(st.session_state.current_conversation_id, assistant_error["role"], assistant_error["content"])
